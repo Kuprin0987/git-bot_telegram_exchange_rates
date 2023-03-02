@@ -1,25 +1,32 @@
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
-
 import json
+import os
+import time
 
-TOKEN = ""
+TOKEN = "your token"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
-with open('dict_exchanges.json', 'r') as fh:
-    dict_exchanges = json.load(fh)
+os.startfile('exchange_rate_parser.py')
+print('Ожидание создания или проверки курсов на свежесь 12 секунд...')
+time.sleep(12)
+print('Ожидание прошло')
+print('запуска бота...')
 
-names_buttons = [name for name in dict_exchanges]
+with open(f'dict_exchanges.json','r') as file:
+    dict_exchanges = json.load(file)
+
+names_buttons = [name for name in dict_exchanges][1:] #дата на первом индексе
 
 dict_exchanges_lower = {}
 for key in dict_exchanges:
     dict_exchanges_lower[key.lower()] = dict_exchanges[key]
 
-list_names_cryptos_lower = [key for key in dict_exchanges_lower]
-print(list_names_cryptos_lower)
+list_names_cryptos_lower = [key for key in dict_exchanges_lower][1:]
+
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
@@ -33,7 +40,8 @@ def message_crypto(dict_exchange):
 Стоимость:              {dict_exchange['price']}
 Капитализация:      {dict_exchange['capitalization']}
 Объём(24ч.):            {dict_exchange['volume']}
-Изменение(24 ч.):  {dict_exchange['change']}"""
+Изменение(24 ч.):  {dict_exchange['change']}
+Дата обновления курса: {dict_exchanges['date']}"""
 
 @dp.message_handler()
 async def crypto(message: types.Message):
@@ -43,4 +51,5 @@ async def crypto(message: types.Message):
 
 
 if __name__ == '__main__':
+    print('бот запущен')
     executor.start_polling(dp)
